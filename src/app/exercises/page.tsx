@@ -1,0 +1,2 @@
+import { SectionPage } from "@/components/section-page";
+export default async function ExercisesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) { return <SectionPage kind="exercises" searchParams={await searchParams} />; }

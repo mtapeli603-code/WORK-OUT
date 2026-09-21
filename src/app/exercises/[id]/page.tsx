@@ -1,0 +1,21 @@
+import { ArrowLeft, Check, Dumbbell, Play, ShieldCheck, TriangleAlert } from "lucide-react";
+import Link from "next/link";
+import { AppShell } from "@/components/app-shell";
+import { ExerciseMedia } from "@/components/exercise-media";
+import { prisma } from "@/lib/prisma";
+import { getYouTubeEmbedUrl } from "@/lib/media";
+import { getCurrentUser } from "@/lib/session";
+
+export default async function ExerciseDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const exercise = await prisma.exercise.findFirst({ where: { OR: [{ slug: id }, { id }] }, include: { media: { orderBy: { sortOrder: "asc" } }, instructionSteps: { orderBy: { step: "asc" } } } });
+  if (!exercise) return <AppShell><div className="detail-page"><Link className="back-link" href="/exercises"><ArrowLeft size={16} /> Back to exercises</Link><div className="empty-note"><Dumbbell size={18} /> Exercise not found.</div></div></AppShell>;
+  const user = await getCurrentUser();
+  const previousSets = user ? await prisma.completedSet.findMany({ where: { exercise: { exerciseId: exercise.id, session: { userId: user.id, completedAt: { not: null } } } }, orderBy: { completedAt: "desc" }, take: 3 }) : [];
+  const tutorial = exercise.media.find((item) => item.type === "TUTORIAL");
+  const tutorialEmbed = tutorial ? getYouTubeEmbedUrl(tutorial.url) : null;
+  const steps = exercise.instructionSteps.length ? exercise.instructionSteps : exercise.instructions.split(".").filter(Boolean).map((body, index) => ({ step: index + 1, body: `${body}.` }));
+  return <AppShell><div className="detail-page"><Link className="back-link" href="/exercises"><ArrowLeft size={16} /> Back to exercises</Link><div className="exercise-detail-grid"><ExerciseMedia media={exercise.media} /><div className="exercise-detail-copy"><p className="eyebrow">{exercise.primaryMuscle} · {exercise.type.toLowerCase()} · {exercise.difficulty.toLowerCase()}</p><h1>{exercise.name}</h1><p className="lede">{exercise.description}</p><div className="exercise-tags"><span>{exercise.equipment}</span><span>{exercise.defaultSets ?? 3} sets × {exercise.defaultReps ?? 10} reps</span></div><Link className="button button-primary" href="/workout/strength-foundations-upper/start"><Play size={16} fill="currentColor" /> Add to workout</Link></div></div><section className="exercise-content-grid"><div><section className="instruction-list"><h2>How to perform</h2>{steps.map((instruction) => <div className="instruction" key={instruction.step}><span>{instruction.step}</span><p>{instruction.body}</p></div>)}</section>{tutorialEmbed && <section className="tutorial-section"><div className="section-heading"><div><p className="eyebrow">Watch tutorial</p><h2>{tutorial?.title ?? "Technique walkthrough"}</h2></div></div><div className="tutorial-frame"><iframe title={tutorial?.title ?? "Exercise tutorial"} src={tutorialEmbed} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /></div><p className="media-attribution">External tutorial hosted by {tutorial?.source ?? "YouTube"}. The original creator retains all rights.</p></section>}</div><aside className="exercise-guidance"><Guidance icon={<TriangleAlert size={17} />} title="Common mistakes" value={exercise.commonMistakes} fallback="Keep the movement controlled and avoid rushing the final reps." /><Guidance icon={<Check size={17} />} title="Form tips" value={exercise.formTips} fallback="Use a weight you can move confidently through the full range." /><Guidance icon={<ShieldCheck size={17} />} title="Safety notes" value={exercise.safetyNotes} fallback="Stop if you feel sharp pain and ask a qualified coach for help." /><div className="previous-performance-card"><p className="eyebrow">Your previous performance</p>{previousSets.length ? previousSets.map((set) => <strong key={set.id}>{set.weight ?? "Bodyweight"} kg × {set.reps ?? "—"}</strong>) : <p>Complete this exercise once and your sets will appear here.</p>}</div></aside></section></div></AppShell>;
+}
+
+function Guidance({ icon, title, value, fallback }: { icon: React.ReactNode; title: string; value: string | null; fallback: string }) { return <section className="guidance-card"><div className="guidance-title">{icon}<h2>{title}</h2></div><p>{value ?? fallback}</p></section>; }
