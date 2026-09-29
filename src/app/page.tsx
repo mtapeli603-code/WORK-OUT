@@ -1,6 +1,7 @@
 import { ArrowUpRight, CalendarDays, ChevronRight, Clock3, Flame, Play, Plus, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { getCurrentUser } from "@/lib/session";
 
 const upcomingWorkouts = [
   { day: "MON", date: "18", title: "Upper body strength", detail: "Chest · Back · Shoulders", duration: "42 min", color: "coral" },
@@ -8,13 +9,16 @@ const upcomingWorkouts = [
   { day: "SAT", date: "23", title: "Full body conditioning", detail: "Strength · Cardio", duration: "35 min", color: "yellow" },
 ];
 
-export function DashboardView() {
+export async function DashboardView() {
+  const user = await getCurrentUser();
+  const name = user?.name?.trim() || "there";
+
   return (
     <AppShell>
       <section className="welcome-row">
         <div>
           <p className="eyebrow">Sunday, September 20, 2026</p>
-          <h1>Good morning, Alex<span className="accent-dot">.</span></h1>
+          <h1>Good morning, {name}<span className="accent-dot">.</span></h1>
           <p className="lede">Small, consistent choices add up. Let&apos;s make today count.</p>
         </div>
         <Link className="button button-primary desktop-action" href="/workouts">
@@ -37,7 +41,7 @@ export function DashboardView() {
             <span><Clock3 size={16} aria-hidden="true" /> 42 min</span>
             <span><DumbbellIcon /> 6 exercises</span>
           </div>
-          <Link className="button button-light" href="/workouts/upper-body-strength">
+          <Link className="button button-light" href="/workouts/strength-foundations-upper">
             View workout <ArrowUpRight size={17} aria-hidden="true" />
           </Link>
           <div className="panel-sun" aria-hidden="true" />
@@ -69,7 +73,7 @@ export function DashboardView() {
         </div>
         <div className="workout-list">
           {upcomingWorkouts.map((workout) => (
-            <Link className="workout-row" href="/workouts/upper-body-strength" key={workout.day}>
+            <Link className="workout-row" href="/workouts/strength-foundations-upper" key={workout.day}>
               <div className={`date-block ${workout.color}`}><span>{workout.day}</span><strong>{workout.date}</strong></div>
               <div className="workout-row-copy"><h3>{workout.title}</h3><p>{workout.detail}</p></div>
               <span className="duration"><Clock3 size={15} aria-hidden="true" /> {workout.duration}</span>

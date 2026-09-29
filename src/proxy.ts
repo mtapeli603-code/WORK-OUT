@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { sessionSecret } from "@/lib/session-secret";
 
 const protectedPaths = ["/dashboard", "/workouts", "/exercises", "/progress", "/history", "/profile", "/settings", "/workout"];
-const secret = new TextEncoder().encode(process.env.SESSION_SECRET ?? "development-only-change-me");
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -11,8 +11,8 @@ export async function proxy(request: NextRequest) {
   let role: string | undefined;
   if (token) {
     try {
-      const { payload } = await jwtVerify(token, secret);
-      role = typeof payload.role === "string" ? payload.role : undefined;
+      const { payload } = await jwtVerify(token, sessionSecret);
+      role = typeof payload.userId === "string" && (payload.role === "USER" || payload.role === "ADMIN") ? payload.role : undefined;
     } catch {
       role = undefined;
     }

@@ -3,10 +3,12 @@ import {
   Dumbbell,
   History,
   LayoutDashboard,
+  LogOut,
   Search,
   Settings,
 } from "lucide-react";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/session";
 
 const navigation = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -16,7 +18,11 @@ const navigation = [
   { label: "History", href: "/history", icon: History },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export async function AppShell({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+  const displayName = user?.name?.trim() || "there";
+  const initials = user?.name?.trim().split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "?";
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -47,12 +53,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>Settings</span>
           </Link>
           <div className="profile-chip">
-            <div className="avatar" aria-hidden="true">AM</div>
+                  {user?.avatarUrl ? <img className="avatar avatar-image" src={user.avatarUrl} alt="" /> : <div className="avatar" aria-hidden="true">{initials}</div>}
             <div>
-              <strong>Alex Morgan</strong>
-              <span>Member</span>
+              <strong>{displayName}</strong>
+              <span>{user?.role === "ADMIN" ? "Admin" : "Member"}</span>
             </div>
           </div>
+          <form action="/api/auth/logout" method="post">
+            <button className="nav-link logout-button" type="submit">
+              <LogOut size={18} strokeWidth={1.8} aria-hidden="true" />
+              <span>Log out</span>
+            </button>
+          </form>
         </div>
       </aside>
 
@@ -63,10 +75,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>FORM</span>
           </div>
           <div className="topbar-actions">
-            <button className="icon-button" type="button" aria-label="Search">
+            <Link className="icon-button" href="/exercises" aria-label="Search exercises">
               <Search size={19} strokeWidth={1.8} aria-hidden="true" />
-            </button>
-            <Link className="avatar avatar-link" href="/profile" aria-label="Open profile">AM</Link>
+            </Link>
+            <Link className="avatar avatar-link" href="/profile" aria-label="Open profile">{user?.avatarUrl ? <img className="avatar avatar-image" src={user.avatarUrl} alt="" /> : initials}</Link>
           </div>
         </header>
         <div className="page-container">{children}</div>
@@ -79,6 +91,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>{label}</span>
           </Link>
         ))}
+        <form action="/api/auth/logout" method="post">
+          <button className="mobile-nav-link logout-button" type="submit">
+            <LogOut size={20} strokeWidth={1.8} aria-hidden="true" />
+            <span>Log out</span>
+          </button>
+        </form>
       </nav>
     </div>
   );

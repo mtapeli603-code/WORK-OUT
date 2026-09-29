@@ -66,7 +66,7 @@ export function WorkoutPlayer({ workoutSlug }: { workoutSlug: string }) {
 
   async function finishWorkout() {
     if (!session) return;
-    const response = await fetch(`/api/workout-sessions/${session.id}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ durationSeconds: 42 * 60 }) });
+    const response = await fetch(`/api/workout-sessions/${session.id}/complete`, { method: "POST" });
     if (!response.ok) { setError("Could not finish workout."); return; }
     window.localStorage.removeItem(`form-active-session:${workoutSlug}`);
     window.localStorage.removeItem(`form-active-session:${workoutSlug}:exercise`);
