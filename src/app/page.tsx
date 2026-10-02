@@ -1,6 +1,7 @@
 import { ArrowUpRight, CalendarDays, ChevronRight, Clock3, Flame, Play, Plus, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { DashboardWelcome } from "@/components/dashboard-welcome";
 import { getCurrentUser } from "@/lib/session";
 
 const upcomingWorkouts = [
@@ -17,8 +18,7 @@ export async function DashboardView() {
     <AppShell>
       <section className="welcome-row">
         <div>
-          <p className="eyebrow">Sunday, September 20, 2026</p>
-          <h1>Good morning, {name}<span className="accent-dot">.</span></h1>
+          <DashboardWelcome name={name} />
           <p className="lede">Small, consistent choices add up. Let&apos;s make today count.</p>
         </div>
         <Link className="button button-primary desktop-action" href="/workouts">
