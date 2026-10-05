@@ -1,8 +1,11 @@
-import { ArrowUpRight, CalendarDays, ChevronRight, Clock3, Flame, Play, Plus, Search, TrendingUp } from "lucide-react";
+import { ArrowUpRight, ChevronRight, Clock3, Play, Plus, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { DashboardConsistencyChart, DashboardConsistencyStats } from "@/components/dashboard-consistency";
 import { DashboardWelcome } from "@/components/dashboard-welcome";
+import { DashboardWorkoutReminder } from "@/components/dashboard-workout-reminder";
 import { getCurrentUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 
 const upcomingWorkouts = [
   { day: "MON", date: "18", title: "Upper body strength", detail: "Chest · Back · Shoulders", duration: "42 min", color: "coral" },
@@ -13,6 +16,12 @@ const upcomingWorkouts = [
 export async function DashboardView() {
   const user = await getCurrentUser();
   const name = user?.name?.trim() || "there";
+  const completedSessions = user ? await prisma.workoutSession.findMany({
+    where: { userId: user.id, completedAt: { not: null } },
+    select: { completedAt: true },
+  }) : [];
+  const completedAt = completedSessions.flatMap((session) => session.completedAt ? [session.completedAt.toISOString()] : []);
+  const weeklyGoal = user?.profile?.workoutFrequency ?? null;
 
   return (
     <AppShell>
@@ -26,6 +35,8 @@ export async function DashboardView() {
           Start a workout
         </Link>
       </section>
+
+      <DashboardWorkoutReminder />
 
       <section className="dashboard-grid" aria-label="Training overview">
         <article className="next-workout panel panel-dark">
@@ -47,20 +58,7 @@ export async function DashboardView() {
           <div className="panel-sun" aria-hidden="true" />
         </article>
 
-        <article className="stat-card panel">
-          <div className="stat-icon lime"><Flame size={18} fill="currentColor" aria-hidden="true" /></div>
-          <p className="eyebrow">Current streak</p>
-          <div className="stat-value">12 <span>days</span></div>
-          <div className="stat-foot"><TrendingUp size={15} aria-hidden="true" /> 4 days longer than last month</div>
-        </article>
-
-        <article className="stat-card panel">
-          <div className="stat-icon blue"><CalendarDays size={18} aria-hidden="true" /></div>
-          <p className="eyebrow">This week</p>
-          <div className="stat-value">3 <span>/ 4 workouts</span></div>
-          <div className="week-progress" aria-label="3 of 4 workouts completed"><span /></div>
-          <div className="stat-foot">One more session to hit your goal</div>
-        </article>
+        <DashboardConsistencyStats completedAt={completedAt} weeklyGoal={weeklyGoal} />
       </section>
 
       <section className="section-block">
@@ -84,14 +82,7 @@ export async function DashboardView() {
       </section>
 
       <section className="lower-grid">
-        <article className="section-block progress-card">
-          <div className="section-heading"><div><p className="eyebrow">Momentum</p><h2>Training consistency</h2></div><Link className="icon-link" href="/progress" aria-label="View progress"><ArrowUpRight size={18} /></Link></div>
-          <div className="chart-placeholder" aria-label="Weekly training activity chart">
-            <div className="chart-lines"><span /><span /><span /></div>
-            <div className="chart-bars"><i style={{ height: "46%" }} /><i style={{ height: "72%" }} /><i style={{ height: "58%" }} /><i className="today" style={{ height: "88%" }} /><i style={{ height: "36%" }} /><i style={{ height: "22%" }} /><i style={{ height: "12%" }} /></div>
-          </div>
-          <div className="chart-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
-        </article>
+        <DashboardConsistencyChart completedAt={completedAt} />
         <article className="section-block quick-search">
           <div className="section-heading"><div><p className="eyebrow">Explore</p><h2>Find an exercise</h2></div><span className="search-orb" aria-hidden="true"><Plus size={18} /></span></div>
           <p>Browse the library by muscle group, equipment, or movement.</p>
