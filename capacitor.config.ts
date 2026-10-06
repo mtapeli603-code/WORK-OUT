@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.form.workout',
-  appName: 'WORK OUT',
+  appName: 'FORM',
   webDir: 'public',
   server: {
     androidScheme: 'https',

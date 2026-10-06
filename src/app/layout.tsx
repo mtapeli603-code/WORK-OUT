@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#172321",
 };
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "A focused home for structured training and measurable progress.",
   manifest: "/manifest.webmanifest",
   icons: [
-    { rel: "icon", url: "/icon-192.png" },
+    { rel: "icon", url: "/form-icon.svg", type: "image/svg+xml" },
     { rel: "apple-touch-icon", url: "/icon-192.png" },
   ],
   appleWebApp: {
