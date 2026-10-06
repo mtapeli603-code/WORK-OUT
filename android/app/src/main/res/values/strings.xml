@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WORK OUT</string>
+    <string name="title_activity_main">WORK OUT</string>
+    <string name="package_name">com.form.workout</string>
+    <string name="custom_url_scheme">com.form.workout</string>
+</resources>
